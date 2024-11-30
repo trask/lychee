@@ -1,8 +1,8 @@
 use http::StatusCode;
 use log::warn;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use crate::{utils::fragment_checker::FragmentChecker, Base, ErrorKind, Status, Uri};
+use crate::{utils::fragment_checker::FragmentChecker, ErrorKind, Status, Uri};
 
 /// A utility for checking the existence and validity of file-based URIs.
 ///
@@ -11,8 +11,6 @@ use crate::{utils::fragment_checker::FragmentChecker, Base, ErrorKind, Status, U
 /// and optional fragment checking for HTML files.
 #[derive(Debug, Clone)]
 pub(crate) struct FileChecker {
-    /// Base path or URL used for resolving relative paths.
-    base: Option<Base>,
     /// List of file extensions to try if the original path doesn't exist.
     fallback_extensions: Vec<String>,
     /// Whether to check for the existence of fragments (e.g., `#section-id`) in HTML files.
@@ -26,16 +24,10 @@ impl FileChecker {
     ///
     /// # Arguments
     ///
-    /// * `base` - Optional base path or URL for resolving relative paths.
     /// * `fallback_extensions` - List of extensions to try if the original file is not found.
     /// * `include_fragments` - Whether to check for fragment existence in HTML files.
-    pub(crate) fn new(
-        base: Option<Base>,
-        fallback_extensions: Vec<String>,
-        include_fragments: bool,
-    ) -> Self {
+    pub(crate) fn new(fallback_extensions: Vec<String>, include_fragments: bool) -> Self {
         Self {
-            base,
             fallback_extensions,
             include_fragments,
             fragment_checker: FragmentChecker::new(),
@@ -59,36 +51,7 @@ impl FileChecker {
             return ErrorKind::InvalidFilePath(uri.clone()).into();
         };
 
-        let resolved_path = self.resolve_path(&path);
-        self.check_path(&resolved_path, uri).await
-    }
-
-    /// Resolves the given path using the base path, if one is set.
-    ///
-    /// # Arguments
-    ///
-    /// * `path` - The path to resolve.
-    ///
-    /// # Returns
-    ///
-    /// Returns the resolved path as a `PathBuf`.
-    fn resolve_path(&self, path: &Path) -> PathBuf {
-        if let Some(Base::Local(base_path)) = &self.base {
-            if path.is_absolute() {
-                let absolute_base_path = if base_path.is_relative() {
-                    std::env::current_dir().unwrap_or_default().join(base_path)
-                } else {
-                    base_path.clone()
-                };
-
-                let stripped = path.strip_prefix("/").unwrap_or(path);
-                absolute_base_path.join(stripped)
-            } else {
-                base_path.join(path)
-            }
-        } else {
-            path.to_path_buf()
-        }
+        self.check_path(&path, uri).await
     }
 
     /// Checks if the given path exists and performs additional checks if necessary.

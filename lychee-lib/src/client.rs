@@ -34,7 +34,7 @@ use crate::{
     filter::{Excludes, Filter, Includes},
     remap::Remaps,
     utils::fragment_checker::FragmentChecker,
-    Base, BasicAuthCredentials, ErrorKind, Request, Response, Result, Status, Uri,
+    BasicAuthCredentials, ErrorKind, Request, Response, Result, Status, Uri,
 };
 
 /// Default number of redirects before a request is deemed as failed, 5.
@@ -242,12 +242,6 @@ pub struct ClientBuilder {
     /// Response timeout per request in seconds.
     timeout: Option<Duration>,
 
-    /// Base for resolving paths.
-    ///
-    /// E.g. if the base is `/home/user/` and the path is `file.txt`, the
-    /// resolved path would be `/home/user/file.txt`.
-    base: Option<Base>,
-
     /// Initial time between retries of failed requests.
     ///
     /// Defaults to [`DEFAULT_RETRY_WAIT_TIME_SECS`].
@@ -399,11 +393,7 @@ impl ClientBuilder {
             filter,
             email_checker: MailChecker::new(),
             website_checker,
-            file_checker: FileChecker::new(
-                self.base,
-                self.fallback_extensions,
-                self.include_fragments,
-            ),
+            file_checker: FileChecker::new(self.fallback_extensions, self.include_fragments),
             fragment_checker: FragmentChecker::new(),
         })
     }
