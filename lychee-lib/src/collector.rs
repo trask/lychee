@@ -147,7 +147,7 @@ impl Collector {
                         uris,
                         &content.source,
                         root_path.as_ref(),
-                        &base,
+                        base.as_ref(),
                         &basic_auth_extractor,
                     );
                     Result::Ok(stream::iter(requests.into_iter().map(Ok)))
