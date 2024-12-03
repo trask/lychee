@@ -15,7 +15,7 @@ use crate::{
 
 /// Extract basic auth credentials for a given URL.
 fn extract_credentials(
-    extractor: &Option<BasicAuthExtractor>,
+    extractor: Option<&BasicAuthExtractor>,
     uri: &Uri,
 ) -> Option<BasicAuthCredentials> {
     extractor.as_ref().and_then(|ext| ext.matches(uri))
@@ -27,7 +27,7 @@ fn create_request(
     source: &InputSource,
     root_path: Option<&PathBuf>,
     base: Option<&Base>,
-    extractor: &Option<BasicAuthExtractor>,
+    extractor: Option<&BasicAuthExtractor>,
 ) -> Result<Request> {
     let uri = try_parse_into_uri(raw_uri, source, root_path, base)?;
     let source = truncate_source(source);
@@ -138,7 +138,7 @@ pub(crate) fn create(
     source: &InputSource,
     root_path: Option<&PathBuf>,
     base: Option<&Base>,
-    extractor: &Option<BasicAuthExtractor>,
+    extractor: Option<&BasicAuthExtractor>,
 ) -> HashSet<Request> {
     let base = base.cloned().or_else(|| Base::from_source(source));
 
@@ -227,7 +227,7 @@ mod tests {
         let source = InputSource::String(String::new());
 
         let uris = vec![RawUri::from("relative.html")];
-        let requests = create(uris, &source, None, Some(&base), &None);
+        let requests = create(uris, &source, None, Some(&base), None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -241,7 +241,7 @@ mod tests {
         let source = InputSource::String(String::new());
 
         let uris = vec![RawUri::from("https://another.com/page")];
-        let requests = create(uris, &source, None, Some(&base), &None);
+        let requests = create(uris, &source, None, Some(&base), None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -255,7 +255,7 @@ mod tests {
         let source = InputSource::String(String::new());
 
         let uris = vec![RawUri::from("/root-relative")];
-        let requests = create(uris, &source, None, Some(&base), &None);
+        let requests = create(uris, &source, None, Some(&base), None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -269,7 +269,7 @@ mod tests {
         let source = InputSource::String(String::new());
 
         let uris = vec![RawUri::from("../parent")];
-        let requests = create(uris, &source, None, Some(&base), &None);
+        let requests = create(uris, &source, None, Some(&base), None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -283,7 +283,7 @@ mod tests {
         let source = InputSource::String(String::new());
 
         let uris = vec![RawUri::from("#fragment")];
-        let requests = create(uris, &source, None, Some(&base), &None);
+        let requests = create(uris, &source, None, Some(&base), None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -297,7 +297,7 @@ mod tests {
         let source = InputSource::FsPath(PathBuf::from("/some/page.html"));
 
         let uris = vec![RawUri::from("relative.html")];
-        let requests = create(uris, &source, Some(&root_path), None, &None);
+        let requests = create(uris, &source, Some(&root_path), None, None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -311,7 +311,7 @@ mod tests {
         let source = InputSource::FsPath(PathBuf::from("/some/page.html"));
 
         let uris = vec![RawUri::from("https://another.com/page")];
-        let requests = create(uris, &source, Some(&root_path), None, &None);
+        let requests = create(uris, &source, Some(&root_path), None, None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -325,7 +325,7 @@ mod tests {
         let source = InputSource::FsPath(PathBuf::from("/some/page.html"));
 
         let uris = vec![RawUri::from("/root-relative")];
-        let requests = create(uris, &source, Some(&root_path), None, &None);
+        let requests = create(uris, &source, Some(&root_path), None, None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -339,7 +339,7 @@ mod tests {
         let source = InputSource::FsPath(PathBuf::from("/some/page.html"));
 
         let uris = vec![RawUri::from("../parent")];
-        let requests = create(uris, &source, Some(&root_path), None, &None);
+        let requests = create(uris, &source, Some(&root_path), None, None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -353,7 +353,7 @@ mod tests {
         let source = InputSource::FsPath(PathBuf::from("/some/page.html"));
 
         let uris = vec![RawUri::from("#fragment")];
-        let requests = create(uris, &source, Some(&root_path), None, &None);
+        let requests = create(uris, &source, Some(&root_path), None, None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -368,7 +368,7 @@ mod tests {
         let source = InputSource::FsPath(PathBuf::from("/some/page.html"));
 
         let uris = vec![RawUri::from("relative.html")];
-        let requests = create(uris, &source, Some(&root_path), Some(&base), &None);
+        let requests = create(uris, &source, Some(&root_path), Some(&base), None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -383,7 +383,7 @@ mod tests {
         let source = InputSource::FsPath(PathBuf::from("/some/page.html"));
 
         let uris = vec![RawUri::from("https://another.com/page")];
-        let requests = create(uris, &source, Some(&root_path), Some(&base), &None);
+        let requests = create(uris, &source, Some(&root_path), Some(&base), None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -398,7 +398,7 @@ mod tests {
         let source = InputSource::FsPath(PathBuf::from("/some/page.html"));
 
         let uris = vec![RawUri::from("/root-relative")];
-        let requests = create(uris, &source, Some(&root_path), Some(&base), &None);
+        let requests = create(uris, &source, Some(&root_path), Some(&base), None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -413,7 +413,7 @@ mod tests {
         let source = InputSource::FsPath(PathBuf::from("/some/page.html"));
 
         let uris = vec![RawUri::from("../parent")];
-        let requests = create(uris, &source, Some(&root_path), Some(&base), &None);
+        let requests = create(uris, &source, Some(&root_path), Some(&base), None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -428,7 +428,7 @@ mod tests {
         let source = InputSource::FsPath(PathBuf::from("/some/page.html"));
 
         let uris = vec![RawUri::from("#fragment")];
-        let requests = create(uris, &source, Some(&root_path), Some(&base), &None);
+        let requests = create(uris, &source, Some(&root_path), Some(&base), None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -441,7 +441,7 @@ mod tests {
         let source = InputSource::String(String::new());
 
         let uris = vec![RawUri::from("https://example.com/page")];
-        let requests = create(uris, &source, None, None, &None);
+        let requests = create(uris, &source, None, None, None);
 
         assert_eq!(requests.len(), 1);
         assert!(requests
@@ -459,7 +459,7 @@ mod tests {
             &input_source,
             None,
             Some(&base),
-            &None,
+            None,
         )
         .unwrap();
 
@@ -488,7 +488,7 @@ mod tests {
             &input_source,
             None,
             Some(&base),
-            &None,
+            None,
         )
         .unwrap();
 
